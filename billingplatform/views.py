@@ -1,144 +1,64 @@
-"""Django settings for the billingplatform project."""
-
-from pathlib import Path
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib import messages
+from django.http import HttpResponse
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-lakw1()!smzwh)wvzz8gx9mpf+9f&h65%@-by3zv8!^77_0a-^'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
-
-# Application definition
-
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.humanize',
-    'billingapp',
-    'adminportal',
-    'customerportal',
-]
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-ROOT_URLCONF = 'billingplatform.urls'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
-WSGI_APPLICATION = 'billingplatform.wsgi.application'
+def home(request):
+    """
+    Simple home view. Replace 'home.html' with your actual template.
+    """
+    try:
+        return render(request, "home.html")
+    except Exception:
+        # Fallback if template missing
+        return HttpResponse("<h1>Home</h1><p>Replace templates/home.html with your template.</p>")
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-# PostgreSQL Database Configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'opbmsdb',
-        'USER': 'opbmsuser',
-        'PASSWORD': '12345',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'billing_platform',
-#         'USER': 'postgres',
-#         'PASSWORD': 'your-password',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
+def about(request):
+    try:
+        return render(request, "about.html")
+    except Exception:
+        return HttpResponse("<h1>About</h1><p>Replace templates/about.html with your template.</p>")
 
 
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+def contact(request):
+    try:
+        return render(request, "contact.html")
+    except Exception:
+        return HttpResponse("<h1>Contact</h1><p>Replace templates/contact.html with your template.</p>")
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
+def login_view(request):
+    """
+    Basic login view. If your project already has forms/auth logic, replace this.
+    """
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            auth_login(request, user)
+            return redirect("customerportal:dashboard")
+        messages.error(request, "Invalid username or password")
+        return redirect("login")
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+    # GET
+    try:
+        return render(request, "login.html")
+    except Exception:
+        # fallback
+        html = """
+        <h1>Login</h1>
+        <form method="post">
+            <input name="username" placeholder="username" required><br>
+            <input name="password" type="password" placeholder="password" required><br>
+            <button type="submit">Login</button>
+        </form>
+        """
+        return HttpResponse(html)
 
 
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'customerportal:dashboard'
-LOGOUT_REDIRECT_URL = 'login'
+def logout_view(request):
+    auth_logout(request)
+    return redirect("login")
